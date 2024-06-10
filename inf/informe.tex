@@ -151,9 +151,9 @@ Los datos recolectados son:
 
 Como primer experimento, utilizamos los siguientes datos: $n = 20$, $s = 5$ $C = R = 0$, los costos de reparación son siempre 0 y la función de decisión siempre decide reparar. Este experimento es una reducción al propuesto el el libro \textit{Simulation, Fift Edition, by Sheldon M. Ross}, sección 7.7, páginas 123-125. En ese problema se propone una simulación reducida de la expuesta en este informe, ya que no tiene en cuenta los precios de las reparaciones y las compras de máquinas.
 
-De esta primera simulación solo podemos variar el número de máquinas de repuesto. Si aumentamos su número a $s = 10$ obtenemos que la media del tiempo aumenta considerablemente (con $s = 5$ se tiene un tiempo promedio de $330.58$, con $s = 10$ se tiene un tiempo promedio de $881.37$) y la proporción de \texttt{TIMEOUT} (condición de parada que indica que se excedió el tiempo límite establecido para la simulación) que se obtienen aumenta del $8\%$ al $97\%$.
+De esta primera simulación solo podemos variar el número de máquinas de repuesto. Si aumentamos su número a $s = 10$ obtenemos que la media del tiempo aumenta considerablemente (con $s = 5$ se tiene un tiempo promedio de $344.04$, con $s = 10$ se tiene un tiempo promedio de $884.35$) y la proporción de \texttt{TIMEOUT} (condición de parada que indica que se excedió el tiempo límite establecido para la simulación) que se obtienen aumenta del $7.6\%$ al $100\%$.
 
-Otro posible experimento es usar SJF(estrategia que prioriza hacer primero las tareas que tardarán el menor tiempo, por sus siglas en inglés \textit{shortest job first}) y ver como afecta la variable del tiempo. Efectivamente, al usar esta política la media del tiempo aumenta a $681.46$ y la proporción de \texttt{TIMEOUT}'s aumenta al $53\%$. Esta política la utilizaremos más adelante para intentar obtener la mejor configuración.
+Otro posible experimento es usar SJF(estrategia que prioriza hacer primero las tareas que tardarán el menor tiempo, por sus siglas en inglés \textit{shortest job first}) y ver como afecta la variable del tiempo. Efectivamente, al usar esta política la media del tiempo aumenta a $739.19$ y la proporción de \texttt{TIMEOUT}'s aumenta al $66\%$. Esta política la utilizaremos más adelante para intentar obtener la mejor configuración.
 
 \subsection{Añadir costo a las reparaciones}
 
@@ -171,11 +171,11 @@ $$
 Aparentemente esta función majoraría los resultados en cuanto al tiempo de ejecución ya que elige de forma más inteligente la mejor opción. Sin embargo los datos arrojados por la simulación indican que en realidad tiene el efecto contrario:
 
 \begin{itemize}
-    \item Tiempo promedio reparando siempre: $340.461$
-    \item Tiempo promedio decidiendo linealmente: $233.877$
+    \item Tiempo promedio reparando siempre: $328.86$
+    \item Tiempo promedio decidiendo linealmente: $221.42$
 \end{itemize}
 
-Dado que ambas medias no están muy separadas entre sí podría tratarse de un error de medición, por tanto es necesario un mayor rigor, aplicando la prueba de \textit{Kruskal-Wallis} obtenemos un p-value de $0.0029 < \alpha = 0.05$ por lo que rechazamos la hipótesis nula de que ambas poblaciones tienen la misma media. Comparando también la media de los fondos obtenidos en ambos experimentos también podemos ver que existe una disminución de las ganancias usando la política de decisión lineal, sin ella se obtiene una ganancia media de $3038.76$ y con ella se obtiene en cambio una ganancia media de $2113.03$.
+Dado que ambas medias no están muy separadas entre sí podría tratarse de un error de medición, por tanto es necesario un mayor rigor, aplicando la prueba de \textit{Kruskal-Wallis} obtenemos un p-value de $9.19e-07 < \alpha = 0.05$ por lo que rechazamos la hipótesis nula de que ambas poblaciones tienen la misma media. Comparando también la media de los fondos obtenidos en ambos experimentos también podemos ver que existe una disminución de las ganancias usando la política de decisión lineal, sin ella se obtiene una ganancia media de $2932.93$ y con ella se obtiene en cambio una ganancia media de $1998.61$.
 
 \subsection{Utilizar una función de ganancia no lineal}
 
@@ -185,7 +185,36 @@ $$
 P(t^{*}) = \int_{0}^{t^{*}} {p(t)dt} = 1 - \cos(t^{*})
 $$
 
-es la función que le debemos suministrar a nuestra simulación para tener un escenario más "realista" en cuanto a las ganancias. Esto en principio debería disminuir las ganancias ya que $p\prime(t^{*}) \leq p(t^{*})$, esta hipótesis se confirma simplemente comparando las medias de ambos experimentos (variando únicamente la función de ganancia, si se usa $p\prime(t^{*})$ la ganancia media es de $2113.03$, si se usa $p(t^{*})$ la ganancia media obtenida es de )
+es la función que le debemos suministrar a nuestra simulación para tener un escenario más "realista" en cuanto a las ganancias. Esto en principio debería disminuir las ganancias ya que $p\prime(t^{*}) \leq p(t^{*})$, esta hipótesis se confirma simplemente comparando las medias de ambos experimentos (variando únicamente la función de ganancia, si se usa $p\prime(t^{*})$ la ganancia media es de $2113.03$, si se usa $p(t^{*})$ la ganancia media obtenida es de $7.52$)
+
+Finalmente dejando fijo el escenario más realista (función de ganancia que oscila, distribución de los eventos Weibull, etc.) intentaremos simular cuál función de decisión es la que arroja los mejores resultados. Esto en un escenario de la vida real supondría decidir de la manera más eficiente cuándo comprar un repuesto o reparar una máquina lo cual podría ayudar a aumentar la eficiencia productiva.
+
+Las funciones de decisión a evaluar son las siguientes:
+
+\begin{itemize}
+    \item $D = 1 \Leftrightarrow c \cdot r \leq C \cdot R$ (lineal)
+    \item $D = 1 \Leftrightarrow X \sim  U\{0,1\}, X = 1$ (random)
+    \item $D = 1 \Leftrightarrow c^{2} \cdot r \leq C^{2} \cdot R$ (prioriza costo)
+    \item $D = 1 \Leftrightarrow c \cdot r^{2} \leq C \cdot R^{2}$ (prioriza el tiempo)
+    \item $D = 1 \Leftrightarrow c^{2} \cdot r^{2} \leq C^{2} \cdot R^{2}$ (prioriza ambos de forma cuadrática)
+\end{itemize}
+
+Al realizar los experimentos, se obtienen medias similares en la variable tiempo, con lo que podemos suponer que no existe gran cmbio entre una política y otra. Nuevamente aplicando el test de \textit{Kruskal-Wallis} obtenemos un p-value de $1.6e-12 < \alpha = 0.05$ por lo que rechazamos la hipótesis de que tienen igual media. Sin embargo, si eliminamos la política de decisión random obtenemos en el mismo test un p-value de $0.41 > \alpha = 0.05$ por lo que podemos aceptar la hipótesis de que las medias poblacionales son iguales. Dado que la muestra en la que la variable de decisión usada es la random, tiene gran variabilidad y es poco predecible, se consideró esta política como poco fiable.
+
+Luego dado que las variables de tiempo son iguales, podemos usar para la decisión final la media de las ganancias. En este aspecto los resultados son los siguientes:
+
+\begin{itemize}
+    \item $5.795$ decisión lineal
+    \item $11.920$ decisión que prioriza el costo
+    \item $6.4639$ decisión que prioriza el tiempo
+    \item $7.520$ decisión cuadrática
+\end{itemize}
+
+Como se puede observar la mejor política parece ser la que prioriza el costo, sin embargo la diferencia es tan pequeña que nos hace pensar que es un error de medición por lo que una comprobación de que no tienen la misma muestra se hace necesaria, efectivamente con un p-value de $0.006$ rechazamos dicha hipótesis. Luego podemos concluir que la política que prioriza el costo es la mejor.
+
+Finalmente como último experimento, podemos suponer que se conocen los tiempos de reparación de las máquinas, (esto en la vida real es poco fiable pero una experto podría hacer dicha estimación) con lo que podríamos utilizar SJF (\textit{shortest job first}) para ordenar las tareas de reparación. Nótese que usar esta política para las entregas no tiene sentido puesto que todas tienen un tiempo fijo que empieza a contar desde que se hace el pedido.
+
+Con SJF la media de las ganancias obtenidas es de $13.44$, mientras que sin SJF es de $11.92$, la mejora es aparentemente pequeña, y al ejecutar el test de \textit{Kruskal-Wallis} obtenemos que ambos experimentos tienen la misma media en su variable de ganancias. Sin embargo al ejecutar el test sobre la variable del tiempo, esta no tiene igual media en ambos experimentos (p-value = 0.001) y esto se confirma al ver que sin SJF la media del tiempo es de 102.75 y con SJF es de 221.8, más de el doble. Con esto podemos afirmar que en este escenario usar SJF ofrece una ventaja en cuanto al tiempo total de funcionamiento de la fábrica.
 
 % ************************************************************
 % ******************* CAPITULO 4 ***************************
@@ -193,15 +222,8 @@ es la función que le debemos suministrar a nuestra simulación para tener un es
 
 
 \section{Modelo Matemático}
-Los resultados muestran que el tamaño máximo y promedio de la cola varían significativamente entre las simulaciones. El tiempo promedio de espera también presenta una alta variabilidad, lo que sugiere que las condiciones específicas de cada simulación influyen en gran medida en el rendimiento. Comparar estos resultados entre simulaciones con y sin la política SJF puede proporcionar información valiosa sobre la efectividad de dicha política.
-\subsection{Descripción del modelo de cómo modelos probabilísticos}
-% Modelo matemático y ecuaciones
-\subsection{Supuestos y restricciones}
-% Supuestos y restricciones
-\subsection{Comparación de los resultados obtenidos con los resultados experimentales}
-% Resultados experimentales y análisis comparativo
+
+Como primer aspecto del modelo matemático, se tiene el criterio de parada usado en los experimentos. Para dicho criterio se toma la desviación estándar de los datos de interés($\theta^{2}$) y se divide entre la raíz del tamaño de la muestra ($\sqrt{h}$), si el valor obtenido es menor que un threshold entonces se considera que la varianza de la muestra es suficientemente buena y se detiene la simulación.
 
 \subsection{Conclusiones}
-
-
 \end{document}
